@@ -9,3 +9,6 @@
 /README.md
 *.iml
 .metadata
+
+# Local --dart-define-from-file values; copy from defines.example.json.
+/defines.json

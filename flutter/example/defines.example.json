@@ -1,0 +1,4 @@
+{
+  "BEACON_API_KEY": "<ingest key>",
+  "BEACON_ENDPOINT": "https://<your-api>.up.railway.app"
+}

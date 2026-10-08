@@ -225,6 +225,8 @@ flutter run --dart-define=BEACON_API_KEY=<ingest key>
 
 Pass `--dart-define=BEACON_ENDPOINT=<url>` to point at a different API. Without `BEACON_API_KEY` the app shows an instruction screen.
 
+To keep both values in a file, copy `defines.example.json` to `defines.json` (git-ignored), fill it in, and run `flutter run --dart-define-from-file=defines.json`.
+
 The default endpoint is the local API (port 3011) as seen from the device:
 
 | Target           | Default endpoint        |
