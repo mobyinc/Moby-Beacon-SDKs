@@ -1,0 +1,11 @@
+# Generated locally with `flutter create`; see the package README.
+/android/
+/ios/
+/linux/
+/macos/
+/web/
+/windows/
+/test/
+/README.md
+*.iml
+.metadata

@@ -1,0 +1,16 @@
+name: moby_beacon_example
+description: Minimal app showing how to use the moby_beacon SDK.
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  moby_beacon:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
