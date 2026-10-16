@@ -6,6 +6,7 @@ Swift package for sending events from iOS study apps to the Moby Beacon API, cal
 
 - `swift test` — Run tests (macOS; the package lists macOS only so tests can run without a simulator)
 - `xcrun swift build --triple arm64-apple-ios15.0-simulator --sdk $(xcrun --sdk iphonesimulator --show-sdk-path)` — Check that the package compiles for iOS
+- `scripts/build-xcframework.sh <version>` — Build the release XCFramework and wrapper package into `build/xcframework/` (ignored)
 
 ## Layout
 
@@ -28,4 +29,4 @@ All SDK state lives on one serial scheduler. Tests drive it with `TestScheduler.
 
 ## Releases
 
-Tag `ios-vX.Y.Z`. Apps add `ios/` from a checkout as a local package until a binary or root manifest is published.
+Tag `ios-vX.Y.Z`, run `scripts/build-xcframework.sh X.Y.Z`, attach the zip to the GitHub release with its checksum. Apps add the unzipped wrapper package as a local package; the source package in `ios/` is for development.
