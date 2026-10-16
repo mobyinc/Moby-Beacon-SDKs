@@ -3,8 +3,8 @@
 #
 #   android/scripts/package-release.sh 0.1.0
 #
-# Expects android/repo/com/mobyinc/moby-beacon/<version>/ to exist (run
-# `./gradlew :moby-beacon:publish` first). Output:
+# Expects android/moby-beacon/build/repo/com/mobyinc/moby-beacon/<version>/ to
+# exist (run `./gradlew :moby-beacon:publish` first). Output:
 #   android/build/release/moby-beacon-<version>/        a Maven repository folder
 #       holding that one version, plus README.md and CHANGELOG.md
 #   android/build/release/moby-beacon-<version>.zip     and its SHA-256
@@ -13,9 +13,9 @@ set -euo pipefail
 
 VERSION="${1:?usage: package-release.sh <version>}"
 ANDROID_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ANDROID_DIR/repo/com/mobyinc/moby-beacon/$VERSION"
+SRC="$ANDROID_DIR/moby-beacon/build/repo/com/mobyinc/moby-beacon/$VERSION"
 if [ ! -f "$SRC/moby-beacon-$VERSION.aar" ]; then
-  echo "no published $VERSION under android/repo; run ./gradlew :moby-beacon:publish first" >&2
+  echo "no published $VERSION under android/moby-beacon/build/repo; run ./gradlew :moby-beacon:publish first" >&2
   exit 1
 fi
 

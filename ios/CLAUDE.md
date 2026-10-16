@@ -29,4 +29,4 @@ All SDK state lives on one serial scheduler. Tests drive it with `TestScheduler.
 
 ## Releases
 
-Tag `ios-vX.Y.Z`, run `scripts/build-xcframework.sh X.Y.Z`, attach the zip to the GitHub release with its checksum. Apps add the unzipped wrapper package as a local package; the source package in `ios/` is for development.
+Tag `ios-vX.Y.Z`, run `scripts/build-xcframework.sh X.Y.Z`, attach the zip to a GitHub release on the tag with its checksum in the notes. Apps add the unzipped wrapper package as a local package; the source package in `ios/` is for development.

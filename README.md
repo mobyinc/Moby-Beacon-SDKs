@@ -17,8 +17,8 @@ SDKs are versioned independently and tagged per SDK:
 
 - Flutter: `flutter-vX.Y.Z`. Apps pin the tag as the `ref` of a git dependency (`path: flutter`).
 - Web: `web-vX.Y.Z`.
-- iOS: `ios-vX.Y.Z`. Apps add `ios/` from a checkout at the tag as a local Swift package.
-- Android: `android-vX.Y.Z`. The tag carries the prebuilt AAR as a Maven folder under `android/repo/`; apps point Gradle at its raw GitHub URL or copy it.
+- iOS: `ios-vX.Y.Z`. The GitHub release on the tag carries the prebuilt XCFramework as a wrapper Swift package zip; apps add it as a local package.
+- Android: `android-vX.Y.Z`. The GitHub release on the tag carries the prebuilt AAR as a Maven folder zip; apps point Gradle at it.
 
 ## License
 

@@ -43,9 +43,9 @@ dependencies {
 
 // `./gradlew :moby-beacon:publish` writes the AAR, its POM (which lists the
 // dependencies above), Gradle module metadata and a sources jar to
-// android/repo/com/mobyinc/moby-beacon/<version>/. That folder is committed, so
-// a release tag carries the binary; see README.md "Install". Pass
-// -PmobyBeaconRepo=<dir> to publish somewhere else, as CI does.
+// build/repo/com/mobyinc/moby-beacon/<version>/, a Maven repository folder that
+// scripts/package-release.sh zips for a GitHub release; see README.md
+// "Development". Pass -PmobyBeaconRepo=<dir> to publish somewhere else.
 afterEvaluate {
     publishing {
         publications {
@@ -59,7 +59,7 @@ afterEvaluate {
         repositories {
             maven {
                 name = 'repo'
-                url = uri(project.findProperty('mobyBeaconRepo') ?: "$rootDir/repo")
+                url = uri(project.findProperty('mobyBeaconRepo') ?: layout.buildDirectory.dir('repo').get().asFile)
             }
         }
     }

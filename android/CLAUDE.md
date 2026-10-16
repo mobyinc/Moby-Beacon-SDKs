@@ -9,7 +9,7 @@ Builds need an Android SDK: set `ANDROID_HOME`, or put `sdk.dir=/path/to/sdk` in
 - `./gradlew :moby-beacon:assembleRelease` — Build the library; the AAR lands in `moby-beacon/build/outputs/aar/`
 - `./gradlew :moby-beacon:testReleaseUnitTest` — Run the JVM unit tests (no device or emulator)
 - `./gradlew :moby-beacon:lint` — Android lint
-- `./gradlew :moby-beacon:publish` — Publish the release AAR, POM and sources jar to `repo/com/mobyinc/moby-beacon/<version>/` (committed; `-PmobyBeaconRepo=<dir>` redirects it)
+- `./gradlew :moby-beacon:publish` — Publish the release AAR, POM and sources jar to `moby-beacon/build/repo/` (ignored; `-PmobyBeaconRepo=<dir>` redirects it)
 - `scripts/package-release.sh <version>` — Zip a published version with the README and changelog into `build/release/` (ignored) for a GitHub release
 
 ## Layout
@@ -32,4 +32,4 @@ All SDK state lives on the worker thread. Tests drive it with `TestScheduler.run
 
 ## Releases
 
-Bump `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` and `CHANGELOG.md`; run `./gradlew :moby-beacon:publish`; commit `repo/`; tag `android-vX.Y.Z`. The tag carries the prebuilt AAR under `repo/`, which apps resolve from its raw GitHub URL or copy into their project (see README.md). Optionally attach `scripts/package-release.sh` output to a GitHub release on the tag.
+Bump `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` and `CHANGELOG.md`; run `./gradlew :moby-beacon:publish` then `scripts/package-release.sh X.Y.Z`; tag `android-vX.Y.Z`; attach the zip to a GitHub release on the tag with its SHA-256 in the notes. Apps unzip the release folder into their project and point Gradle at `repo/` inside it; the source module in `android/moby-beacon/` is for development.

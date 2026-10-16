@@ -53,7 +53,7 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :moby-beacon:assembleRelease :moby-beacon:testReleaseUnitTest
-      - run: ./gradlew :moby-beacon:publish -PmobyBeaconRepo="$RUNNER_TEMP/moby-beacon-repo"
+      - run: ./gradlew :moby-beacon:publish
 
   ios:
     runs-on: macos-latest

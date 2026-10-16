@@ -4,11 +4,10 @@
 
 ## Install
 
-Each release is a prebuilt AAR published as a small Maven repository folder, `android/repo/`, committed to this repo at the `android-v<version>` tag. The folder holds the AAR, a POM that lists its dependencies, and a sources jar, so Gradle resolves it like any other library and apps never compile the SDK's sources. The same binary works from Kotlin and Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21.
+Each release ships the SDK as a prebuilt AAR inside a small Maven repository folder, attached as `moby-beacon-<version>.zip` to the `android-v<version>` release on this repo's Releases page. The folder also holds a POM that lists the SDK's dependencies and a sources jar, so Gradle resolves it like any other library and the app never compiles the SDK's sources. The same binary works from Kotlin and Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21.
 
-### From the tag
-
-Point Gradle at the folder on GitHub, pinned to the release tag, and depend on the artifact:
+1. Download `moby-beacon-<version>.zip` from the release and unzip it into your project's repository, for example `vendor/moby-beacon-0.1.0/`. The folder contains `repo/`, this README and the changelog.
+2. Add the `repo` folder as a Maven repository and depend on the artifact:
 
 ```groovy
 // settings.gradle
@@ -16,7 +15,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://raw.githubusercontent.com/mobyinc/Moby-Beacon-SDKs/android-v0.1.0/android/repo' }
+        maven { url uri("$rootDir/vendor/moby-beacon-0.1.0/repo") }
     }
 }
 
@@ -26,36 +25,9 @@ dependencies {
 }
 ```
 
-Projects that declare repositories in the root `build.gradle` (`allprojects { repositories { ... } }`) add the `maven { ... }` line there instead. Gradle fetches the AAR and its dependencies (`androidx.lifecycle:lifecycle-process` and the Kotlin standard library) on the next sync. To upgrade, change the tag in the URL and the version.
+Projects that declare repositories in the root `build.gradle` (`allprojects { repositories { ... } }`) add the `maven { ... }` line there instead. Gradle picks up the SDK's dependencies (`androidx.lifecycle:lifecycle-process` and the Kotlin standard library) from the POM on the next sync.
 
-### From a copy
-
-To avoid fetching from GitHub at build time, keep the folder in your repository. Download `moby-beacon-<version>.zip` from the `android-v<version>` GitHub release, or copy `android/repo/` from a checkout at the tag, unzip it somewhere like `vendor/moby-beacon-0.1.0/`, and point Gradle at the `repo` folder inside it:
-
-```groovy
-maven { url uri("$rootDir/vendor/moby-beacon-0.1.0/repo") }
-```
-
-The dependency line is the same as above. To upgrade, replace the folder and bump the version.
-
-### Bare AAR
-
-If your build cannot add a repository, take `moby-beacon-<version>.aar` out of the folder into `app/libs/`:
-
-```groovy
-dependencies {
-    implementation files('libs/moby-beacon-0.1.0.aar')
-    // An AAR carries no dependency list, so add the SDK's dependencies yourself.
-    implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21' // already present if the app applies the Kotlin plugin
-}
-```
-
-Declare a `files(...)` AAR in one module only; two modules that each declare it produce duplicate-class errors.
-
-### From source
-
-To debug the SDK or work on it, add the sources instead of the binary: clone this repo, copy `android/moby-beacon/` into your project, include it in `settings.gradle` (`include ':app', ':moby-beacon'`) and depend on `project(':moby-beacon')`. The host project then needs the Kotlin Gradle plugin (`org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21` or newer) on its buildscript classpath, even when the app itself is Java. Switching an app between the binary and the source module needs no code changes, because the package and API are identical.
+To upgrade, replace the folder with the new release's folder and bump the version in both lines.
 
 The app needs the INTERNET permission in `AndroidManifest.xml` (inside `<manifest>`):
 
@@ -275,14 +247,16 @@ cd android
 ./gradlew :moby-beacon:testReleaseUnitTest :moby-beacon:assembleRelease
 ```
 
+To work on the SDK itself from an app, add `android/moby-beacon/` from a checkout as a source module instead of the release folder: include it in `settings.gradle` (`include ':app', ':moby-beacon'`) and depend on `project(':moby-beacon')`. The host project then needs the Kotlin Gradle plugin on its buildscript classpath, even when the app is Java. The package and API are identical, so switching between the two needs no code changes.
+
 Publish a release:
 
-1. Set the new version in `moby-beacon/build.gradle` (`version = '...'`), in the `MobyBeacon.VERSION` constant, and in `CHANGELOG.md`.
-2. Run `./gradlew :moby-beacon:publish`. It writes the AAR, POM, Gradle module metadata and sources jar to `repo/com/mobyinc/moby-beacon/<version>/`.
-3. Commit `repo/` together with the version bump and tag that commit `android-v<version>`. Apps point Gradle at the tag, so the committed binary must be built from the tagged sources.
-4. Optionally run `scripts/package-release.sh <version>`. It zips that version's folder with this README and the changelog into `build/release/moby-beacon-<version>.zip` (ignored) and prints its SHA-256, for a GitHub release on the tag that apps vendoring the library can download.
+1. Set the new version in `moby-beacon/build.gradle` (`version = '...'`), in the `MobyBeacon.VERSION` constant, and in `CHANGELOG.md`, and commit.
+2. Run `./gradlew :moby-beacon:publish`. It writes the AAR, POM, Gradle module metadata and sources jar to `moby-beacon/build/repo/com/mobyinc/moby-beacon/<version>/` (ignored).
+3. Run `scripts/package-release.sh <version>`. It copies that version's folder, this README and the changelog into `build/release/moby-beacon-<version>/`, zips it to `moby-beacon-<version>.zip` and prints the zip's SHA-256.
+4. Tag the commit `android-v<version>`, create a GitHub release on that tag, attach the zip and put the SHA-256 in the release notes.
 
-Earlier versions stay under `repo/`, so older tags and pinned apps keep resolving. `MobyBeacon.VERSION` reports the version at runtime.
+`MobyBeacon.VERSION` reports the version at runtime.
 
 ## Differences from the Flutter SDK
 
