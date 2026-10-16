@@ -405,6 +405,9 @@ class MobyBeacon private constructor(
     }
 
     companion object {
+        /** The SDK version, the same as the Maven artifact's. Kept in sync with moby-beacon/build.gradle. */
+        const val VERSION = "0.1.0"
+
         /**
          * The instance that has been created and not yet disposed. Two
          * instances would share, and overwrite, one queue file.

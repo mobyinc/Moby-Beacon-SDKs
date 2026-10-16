@@ -18,7 +18,7 @@ SDKs are versioned independently and tagged per SDK:
 - Flutter: `flutter-vX.Y.Z`. Apps pin the tag as the `ref` of a git dependency (`path: flutter`).
 - Web: `web-vX.Y.Z`.
 - iOS: `ios-vX.Y.Z`. Apps add `ios/` from a checkout at the tag as a local Swift package.
-- Android: `android-vX.Y.Z`. Not yet published; apps copy `android/moby-beacon/` from a checkout at the tag as a source module.
+- Android: `android-vX.Y.Z`. The tag carries the prebuilt AAR as a Maven folder under `android/repo/`; apps point Gradle at its raw GitHub URL or copy it.
 
 ## License
 

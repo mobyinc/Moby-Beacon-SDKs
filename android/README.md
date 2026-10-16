@@ -4,25 +4,58 @@
 
 ## Install
 
-The library is not published to a Maven repository or as a binary yet. Until it is, add it from a checkout of this repo pinned to a release tag:
+Each release is a prebuilt AAR published as a small Maven repository folder, `android/repo/`, committed to this repo at the `android-v<version>` tag. The folder holds the AAR, a POM that lists its dependencies, and a sources jar, so Gradle resolves it like any other library and apps never compile the SDK's sources. The same binary works from Kotlin and Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21.
 
-```bash
-git clone --branch android-v0.1.0 https://github.com/mobyinc/Moby-Beacon-SDKs.git
-```
+### From the tag
 
-Then copy `android/moby-beacon/` into your project, include it in `settings.gradle`, and depend on it from the app's `build.gradle`:
+Point Gradle at the folder on GitHub, pinned to the release tag, and depend on the artifact:
 
 ```groovy
 // settings.gradle
-include ':app', ':moby-beacon'
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://raw.githubusercontent.com/mobyinc/Moby-Beacon-SDKs/android-v0.1.0/android/repo' }
+    }
+}
 
 // app/build.gradle
 dependencies {
-    implementation project(':moby-beacon')
+    implementation 'com.mobyinc:moby-beacon:0.1.0'
 }
 ```
 
-The module is Kotlin, so the host project needs the Kotlin Gradle plugin (`org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21` or newer) on its buildscript classpath, even when the app itself is Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21.
+Projects that declare repositories in the root `build.gradle` (`allprojects { repositories { ... } }`) add the `maven { ... }` line there instead. Gradle fetches the AAR and its dependencies (`androidx.lifecycle:lifecycle-process` and the Kotlin standard library) on the next sync. To upgrade, change the tag in the URL and the version.
+
+### From a copy
+
+To avoid fetching from GitHub at build time, keep the folder in your repository. Download `moby-beacon-<version>.zip` from the `android-v<version>` GitHub release, or copy `android/repo/` from a checkout at the tag, unzip it somewhere like `vendor/moby-beacon-0.1.0/`, and point Gradle at the `repo` folder inside it:
+
+```groovy
+maven { url uri("$rootDir/vendor/moby-beacon-0.1.0/repo") }
+```
+
+The dependency line is the same as above. To upgrade, replace the folder and bump the version.
+
+### Bare AAR
+
+If your build cannot add a repository, take `moby-beacon-<version>.aar` out of the folder into `app/libs/`:
+
+```groovy
+dependencies {
+    implementation files('libs/moby-beacon-0.1.0.aar')
+    // An AAR carries no dependency list, so add the SDK's dependencies yourself.
+    implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21' // already present if the app applies the Kotlin plugin
+}
+```
+
+Declare a `files(...)` AAR in one module only; two modules that each declare it produce duplicate-class errors.
+
+### From source
+
+To debug the SDK or work on it, add the sources instead of the binary: clone this repo, copy `android/moby-beacon/` into your project, include it in `settings.gradle` (`include ':app', ':moby-beacon'`) and depend on `project(':moby-beacon')`. The host project then needs the Kotlin Gradle plugin (`org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21` or newer) on its buildscript classpath, even when the app itself is Java. Switching an app between the binary and the source module needs no code changes, because the package and API are identical.
 
 The app needs the INTERNET permission in `AndroidManifest.xml` (inside `<manifest>`):
 
@@ -230,6 +263,26 @@ Only one instance can be live at a time, because instances share the queue file.
 - **At-least-once delivery.** If the app is killed after the API accepts a batch but before the SDK removes it from disk, that batch is sent again on the next launch. The same applies to a request that times out client-side but completes on the server late. Analyses that count events should tolerate occasional duplicates.
 - **No background sending.** Events queued while the app is not running are sent the next time it starts. The SDK uses no `WorkManager` or foreground service.
 - **Android only**, minSdk 21.
+
+## Development
+
+The library builds on its own from `android/`. Builds need an Android SDK: set `ANDROID_HOME`, or put `sdk.dir=/path/to/sdk` in `android/local.properties` (git-ignored).
+
+Run the JVM unit tests and build the AAR:
+
+```bash
+cd android
+./gradlew :moby-beacon:testReleaseUnitTest :moby-beacon:assembleRelease
+```
+
+Publish a release:
+
+1. Set the new version in `moby-beacon/build.gradle` (`version = '...'`), in the `MobyBeacon.VERSION` constant, and in `CHANGELOG.md`.
+2. Run `./gradlew :moby-beacon:publish`. It writes the AAR, POM, Gradle module metadata and sources jar to `repo/com/mobyinc/moby-beacon/<version>/`.
+3. Commit `repo/` together with the version bump and tag that commit `android-v<version>`. Apps point Gradle at the tag, so the committed binary must be built from the tagged sources.
+4. Optionally run `scripts/package-release.sh <version>`. It zips that version's folder with this README and the changelog into `build/release/moby-beacon-<version>.zip` (ignored) and prints its SHA-256, for a GitHub release on the tag that apps vendoring the library can download.
+
+Earlier versions stay under `repo/`, so older tags and pinned apps keep resolving. `MobyBeacon.VERSION` reports the version at runtime.
 
 ## Differences from the Flutter SDK
 

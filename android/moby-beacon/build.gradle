@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'maven-publish'
+
+// The release version. Bump it here, in MobyBeacon.VERSION and in CHANGELOG.md.
+group = 'com.mobyinc'
+version = '0.1.0'
 
 android {
     namespace 'com.mobyinc.beacon'
@@ -12,6 +17,12 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
     }
 }
 
@@ -28,4 +39,28 @@ dependencies {
     // The unit-test classpath ends with a stubbed android.jar, so the real
     // org.json has to come first for the module's JSON code to run on the JVM.
     testImplementation 'org.json:json:20231013'
+}
+
+// `./gradlew :moby-beacon:publish` writes the AAR, its POM (which lists the
+// dependencies above), Gradle module metadata and a sources jar to
+// android/repo/com/mobyinc/moby-beacon/<version>/. That folder is committed, so
+// a release tag carries the binary; see README.md "Install". Pass
+// -PmobyBeaconRepo=<dir> to publish somewhere else, as CI does.
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = project.group
+                artifactId = 'moby-beacon'
+                version = project.version
+            }
+        }
+        repositories {
+            maven {
+                name = 'repo'
+                url = uri(project.findProperty('mobyBeaconRepo') ?: "$rootDir/repo")
+            }
+        }
+    }
 }
