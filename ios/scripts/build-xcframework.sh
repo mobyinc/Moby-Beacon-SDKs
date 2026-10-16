@@ -82,6 +82,6 @@ PS
 cp "$IOS_DIR/README.md" "$IOS_DIR/CHANGELOG.md" "$PKG/"
 
 # 5. Zip for a GitHub Release and print the checksum for a url-based binaryTarget.
-(cd "$OUT" && ditto -c -k --keepParent "MobyBeacon-$VERSION" "MobyBeacon-$VERSION.zip")
+(cd "$OUT" && ditto -c -k --keepParent --norsrc --noextattr "MobyBeacon-$VERSION" "MobyBeacon-$VERSION.zip")
 (cd "$OUT" && swift package compute-checksum "MobyBeacon-$VERSION.zip" | tee "MobyBeacon-$VERSION.zip.checksum")
 echo "Built $PKG"
