@@ -53,10 +53,22 @@ class MobyBeaconConfig private constructor(
         /** Throws [IllegalArgumentException] when any setting is invalid. */
         fun build(): MobyBeaconConfig {
             val normalized = endpoint.replace(Regex("/+$"), "")
-            require(isAbsoluteHttpUrl(normalized)) {
+            // Requests go to "$endpoint/events", so a query or fragment would
+            // swallow the path and whitespace would break the host.
+            require(
+                isAbsoluteHttpUrl(normalized) &&
+                    normalized.none { it == '?' || it == '#' || it.isWhitespace() },
+            ) {
                 "endpoint must be an absolute http(s) URL"
             }
             require(apiKey.isNotBlank()) { "apiKey must not be empty" }
+            // HttpURLConnection rejects header values with control characters
+            // (a key read from a file often ends in a newline) with an
+            // IllegalArgumentException that would otherwise surface as a
+            // network error on every send.
+            require(apiKey.none { it < ' ' || it == '\u007F' }) {
+                "apiKey must not contain control characters"
+            }
             validateUserId(userId)
             require(flushInterval > 0) { "flushIntervalMs must be positive" }
             require(batchSize >= 1) { "batchSize must be at least 1" }

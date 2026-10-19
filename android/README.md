@@ -102,8 +102,8 @@ Build a config with `MobyBeaconConfig.Builder(endpoint, apiKey, userId)`, then t
 
 | Builder method                    | Type                      | Required | Default | Description                                                                          |
 | --------------------------------- | ------------------------- | -------- | ------- | ------------------------------------------------------------------------------------ |
-| `Builder(endpoint, ...)`          | `String`                  | Yes      | —       | API base URL (e.g., `https://api.example.com`). Trailing `/` characters are removed. |
-| `Builder(..., apiKey, ...)`       | `String`                  | Yes      | —       | Ingest API key, sent as the `X-API-Key` header                                       |
+| `Builder(endpoint, ...)`          | `String`                  | Yes      | —       | API base URL (e.g., `https://api.example.com`). Trailing `/` characters are removed; a query string, fragment or whitespace is rejected. |
+| `Builder(..., apiKey, ...)`       | `String`                  | Yes      | —       | Ingest API key, sent as the `X-API-Key` header. Must not be blank or contain control characters such as a trailing newline                                       |
 | `Builder(..., userId)`            | `String`                  | Yes      | —       | Default user ID attached to all events                                               |
 | `flushIntervalMs(long)`           | `long`                    | No       | `5000`  | Milliseconds between automatic flushes while sends succeed                           |
 | `batchSize(int)`                  | `int`                     | No       | `10`    | Flush as soon as this many events are queued (while sends are healthy)               |

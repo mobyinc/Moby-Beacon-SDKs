@@ -20,7 +20,7 @@ VERSION="${1:?usage: build-xcframework.sh <version>}"
 IOS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$IOS_DIR/build/xcframework"
 # The changelog ships inside the zip, so the version must have its entry.
-grep -qF "## $VERSION" "$IOS_DIR/CHANGELOG.md" \
+grep -qxF "## $VERSION" "$IOS_DIR/CHANGELOG.md" \
   || { echo "CHANGELOG.md has no '## $VERSION' section; add the release notes first" >&2; exit 1; }
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

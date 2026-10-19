@@ -22,6 +22,8 @@ protocol QueueStorage: AnyObject {
 final class FileQueueStorage: QueueStorage {
     private let directory: URL
     private let ioQueue: DispatchQueue
+    /// Touched only on `ioQueue`.
+    private var excludedFromBackup = false
 
     init(directory: URL, ioQueue: DispatchQueue = DispatchQueue(label: "com.mobyinc.beacon.storage")) {
         self.directory = directory
@@ -55,6 +57,7 @@ final class FileQueueStorage: QueueStorage {
             let fileManager = FileManager.default
             do {
                 try fileManager.createDirectory(at: self.directory, withIntermediateDirectories: true)
+                self.excludeFromBackup()
                 try self.writeSynchronized(Data(contents.utf8), to: self.tempURL)
                 if fileManager.fileExists(atPath: self.fileURL.path) {
                     _ = try fileManager.replaceItemAt(self.fileURL, withItemAt: self.tempURL)
@@ -68,6 +71,19 @@ final class FileQueueStorage: QueueStorage {
                 completion(.failure(error))
             }
         }
+    }
+
+    /// Keeps queued events out of device and iCloud backups, as Android's
+    /// `noBackupFilesDir` does: a queue restored onto another device would
+    /// resend events this device has already delivered. The flag is a
+    /// directory attribute, so it also covers the temp and quarantine files.
+    /// Best effort; a failure is retried on the next write.
+    private func excludeFromBackup() {
+        guard !excludedFromBackup else { return }
+        var directory = self.directory
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        excludedFromBackup = (try? directory.setResourceValues(values)) != nil
     }
 
     /// Writes `data` to `url` and flushes it to disk before returning, so the

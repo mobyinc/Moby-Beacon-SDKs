@@ -34,7 +34,7 @@ All SDK state lives on the worker thread. Tests drive it with `TestScheduler.run
 
 Releases are cut from `main` with a clean tree.
 
-1. Set the same version in three places and commit: `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` in `MobyBeacon.kt`, and a `## X.Y.Z` section in `CHANGELOG.md`. The packaging script refuses a version any of them does not declare.
+1. Set the same version in three places and commit: `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` in `MobyBeacon.kt`, and a `## X.Y.Z` section in `CHANGELOG.md`, that exact heading on its own line. The packaging script refuses a version any of them does not declare.
 2. `./gradlew :moby-beacon:testReleaseUnitTest` and `python3 scripts/test_package_release.py` must pass.
 3. Tag, publish and package:
    ```bash

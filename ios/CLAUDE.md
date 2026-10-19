@@ -31,7 +31,7 @@ All SDK state lives on one serial scheduler. Tests drive it with `TestScheduler.
 
 Releases are cut from `main` with a clean tree. There is no version constant in the sources; the version lives in the tag, the changelog and the build argument.
 
-1. Add a `## X.Y.Z` section to `CHANGELOG.md` (the zip ships it; the build script refuses a version without one) and commit.
+1. Add a `## X.Y.Z` section to `CHANGELOG.md`, that exact heading on its own line (the zip ships it; the build script refuses a version without one), and commit.
 2. `swift test` must pass.
 3. Tag and build:
    ```bash

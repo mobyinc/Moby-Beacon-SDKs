@@ -35,15 +35,24 @@ public final class MobyBeaconConfig: NSObject {
         var stripped = Substring(endpoint)
         while stripped.last == "/" { stripped.removeLast() }
 
-        guard let components = URLComponents(string: String(stripped)),
+        // Requests go to "\(endpoint)/events", so a query or fragment would
+        // swallow the path; URLComponents already rejects whitespace.
+        guard !stripped.contains(where: \.isWhitespace),
+              let components = URLComponents(string: String(stripped)),
               let scheme = components.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
-              let host = components.host, !host.isEmpty
+              let host = components.host, !host.isEmpty,
+              components.query == nil, components.fragment == nil
         else {
             throw MobyBeaconSetupError.invalidEndpoint(endpoint)
         }
         if apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw MobyBeaconSetupError.emptyAPIKey
+        }
+        // A key read from a file often ends in a newline, which is not a
+        // valid header value and would fail every send.
+        if apiKey.unicodeScalars.contains(where: { $0.value < 0x20 || $0.value == 0x7F }) {
+            throw MobyBeaconSetupError.apiKeyContainsControlCharacters
         }
         if userId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw MobyBeaconSetupError.emptyUserId

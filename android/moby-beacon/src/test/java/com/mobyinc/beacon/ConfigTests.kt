@@ -120,6 +120,24 @@ class ConfigTests {
     }
 
     @Test
+    fun test_rejectsEndpointsWithAQueryFragmentOrWhitespace() {
+        for (endpoint in listOf(
+            "https://beacon.test?x=1", "https://beacon.test/api?", "https://beacon.test#frag",
+            "https://beacon.test ", "https://beacon.test\n", "https://bea con.test",
+        )) {
+            assertRejects("endpoint must be an absolute http(s) URL") { builder(endpoint = endpoint).build() }
+        }
+    }
+
+    @Test
+    fun test_rejectsAnApiKeyWithControlCharacters() {
+        for (apiKey in listOf("key\n", "key\r\n", "\tkey", "ke\u0000y", "key\u007F")) {
+            assertRejects("apiKey must not contain control characters") { builder(apiKey = apiKey).build() }
+        }
+        assertEquals("key with spaces", builder(apiKey = "key with spaces").build().apiKey)
+    }
+
+    @Test
     fun test_rejectsWhitespaceOnlyApiKeyAndUserId() {
         assertRejects("apiKey must not be empty") { builder(apiKey = "  ").build() }
         assertRejects("userId must not be empty") { builder(userId = "\n").build() }

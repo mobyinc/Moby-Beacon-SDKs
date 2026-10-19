@@ -15,6 +15,7 @@ public enum MobyBeaconSetupError: Error, LocalizedError, Equatable {
     case maxQueueSizeBelowOne
     case alreadyRunning
     case storageUnavailable(String)
+    case apiKeyContainsControlCharacters
 
     public var errorDescription: String? {
         switch self {
@@ -38,6 +39,8 @@ public enum MobyBeaconSetupError: Error, LocalizedError, Equatable {
             return "MobyBeacon is already running"
         case .storageUnavailable(let reason):
             return "the event queue could not be opened: \(reason)"
+        case .apiKeyContainsControlCharacters:
+            return "apiKey must not contain control characters"
         }
     }
 
@@ -54,6 +57,7 @@ public enum MobyBeaconSetupError: Error, LocalizedError, Equatable {
         case .maxQueueSizeBelowOne: return .maxQueueSizeBelowOne
         case .alreadyRunning: return .alreadyRunning
         case .storageUnavailable: return .storageUnavailable
+        case .apiKeyContainsControlCharacters: return .apiKeyContainsControlCharacters
         }
     }
 }
@@ -71,6 +75,7 @@ public enum MobyBeaconSetupError: Error, LocalizedError, Equatable {
     case maxQueueSizeBelowOne = 8
     case alreadyRunning = 9
     case storageUnavailable = 10
+    case apiKeyContainsControlCharacters = 11
 }
 
 /// Exposes the `NSError` domain of `MobyBeaconSetupError` to Objective-C.

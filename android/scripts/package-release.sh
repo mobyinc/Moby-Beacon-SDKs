@@ -15,15 +15,17 @@ VERSION="${1:?usage: package-release.sh <version>}"
 ANDROID_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # The publication folder for an older version survives later publishes, so the
 # version must be the one the sources declare, or a stale build would be shipped.
-declare_version() { # $1 = file (relative to android/), $2 = fixed-string declaration
-  if ! grep -qF -- "$2" "$ANDROID_DIR/$1"; then
+declare_version() { # $1 = file (relative to android/), $2 = fixed-string declaration, $3 = "line" if $2 must be a whole line
+  local flags=-qF
+  [ "${3:-}" = line ] && flags=-qxF
+  if ! grep "$flags" -- "$2" "$ANDROID_DIR/$1"; then
     echo "$1 does not declare version $VERSION (expected: $2); bump it and publish first" >&2
     exit 1
   fi
 }
 declare_version moby-beacon/build.gradle "version = '$VERSION'"
 declare_version moby-beacon/src/main/java/com/mobyinc/beacon/MobyBeacon.kt "const val VERSION = \"$VERSION\""
-declare_version CHANGELOG.md "## $VERSION"
+declare_version CHANGELOG.md "## $VERSION" line
 SRC="$ANDROID_DIR/moby-beacon/build/repo/com/mobyinc/moby-beacon/$VERSION"
 # An AAR alone loses the dependency metadata Gradle needs. Check the complete
 # publication before replacing an existing release folder or archive.

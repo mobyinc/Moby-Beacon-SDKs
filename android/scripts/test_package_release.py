@@ -103,6 +103,7 @@ class PackageReleaseTests(unittest.TestCase):
             (self.gradle, "version = '0.1.0'", "version = '0.2.0'"),
             (self.kotlin, 'VERSION = "0.1.0"', 'VERSION = "0.2.0"'),
             (self.android / "CHANGELOG.md", "## 0.1.0", "## 0.2.0"),
+            (self.android / "CHANGELOG.md", "## 0.1.0", "## 0.1.0-beta"),
         ]
         for path, current, bumped in stale:
             with self.subTest(file=path.name):

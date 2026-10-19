@@ -98,8 +98,8 @@ Start **one** instance per app and keep a reference to it, for example in your a
 
 | Option          | Type                              | Required | Default  | Description                                                                          |
 | --------------- | --------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------ |
-| `endpoint`      | `String`                          | Yes      | —        | API base URL (e.g., `https://api.example.com`). Trailing `/` characters are removed. |
-| `apiKey`        | `String`                          | Yes      | —        | Ingest API key, sent as the `X-API-Key` header                                       |
+| `endpoint`      | `String`                          | Yes      | —        | API base URL (e.g., `https://api.example.com`). Trailing `/` characters are removed; a query string, fragment or whitespace is rejected. |
+| `apiKey`        | `String`                          | Yes      | —        | Ingest API key, sent as the `X-API-Key` header. Must not be blank or contain control characters such as a trailing newline. |
 | `userId`        | `String`                          | Yes      | —        | Default user ID attached to all events                                               |
 | `flushInterval` | `TimeInterval` (seconds)          | No       | `5`      | Time between automatic flushes while sends succeed                                   |
 | `batchSize`     | `Int`                             | No       | `10`     | Flush as soon as this many events are queued (while sends are healthy)               |
@@ -175,7 +175,7 @@ Objective-C:
 
 ## Batching, Flushing & Persistence
 
-Events are appended to an in-memory queue that is mirrored to `queue.json` in a `moby_beacon/` directory under the app's Application Support directory. They stay there until the API confirms them, so events survive the app being killed, the device restarting, and offline periods.
+Events are appended to an in-memory queue that is mirrored to `queue.json` in a `moby_beacon/` directory under the app's Application Support directory. The directory is excluded from device and iCloud backups, so a backup restored onto another device does not resend events the original device already delivered. They stay there until the API confirms them, so events survive the app being killed, the device restarting, and offline periods.
 
 **Automatic flushing** happens when:
 

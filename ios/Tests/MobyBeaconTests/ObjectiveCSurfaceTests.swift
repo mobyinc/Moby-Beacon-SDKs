@@ -64,6 +64,7 @@ final class ObjectiveCSurfaceTests: XCTestCase {
             (.maxQueueSizeBelowOne, .maxQueueSizeBelowOne, 8),
             (.alreadyRunning, .alreadyRunning, 9),
             (.storageUnavailable("locked"), .storageUnavailable, 10),
+            (.apiKeyContainsControlCharacters, .apiKeyContainsControlCharacters, 11),
         ]
         XCTAssertEqual(MobyBeaconSetupErrorInfo.domain, "MobyBeacon.SetupError")
         for (error, code, rawValue) in cases {

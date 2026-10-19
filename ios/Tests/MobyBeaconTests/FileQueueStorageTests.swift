@@ -88,6 +88,13 @@ final class FileQueueStorageTests: XCTestCase {
         )
     }
 
+    func test_writeExcludesTheDirectoryFromBackups() throws {
+        let nested = dir.appendingPathComponent("nested/moby_beacon", isDirectory: true)
+        try write(FileQueueStorage(directory: nested), "[]").get()
+        let values = try nested.resourceValues(forKeys: [.isExcludedFromBackupKey])
+        XCTAssertEqual(values.isExcludedFromBackup, true)
+    }
+
     func test_quarantineMovesTheQueueAside() throws {
         let storage = FileQueueStorage(directory: dir)
         try write(storage, "{not json").get()

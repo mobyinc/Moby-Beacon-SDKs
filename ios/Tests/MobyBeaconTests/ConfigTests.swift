@@ -88,6 +88,20 @@ final class ConfigTests: XCTestCase {
         }
     }
 
+    func test_rejectsEndpointsWithAQueryFragmentOrWhitespace() {
+        for endpoint in ["https://beacon.test?x=1", "https://beacon.test/api?", "https://beacon.test#frag",
+                         "https://beacon.test ", "https://beacon.test\n", "https://bea con.test"] {
+            assertThrows(.invalidEndpoint(endpoint)) { try config(endpoint: endpoint) }
+        }
+    }
+
+    func test_rejectsAnApiKeyWithControlCharacters() throws {
+        for apiKey in ["key\n", "key\r\n", "\tkey", "ke\u{0}y", "key\u{7F}"] {
+            assertThrows(.apiKeyContainsControlCharacters) { try config(apiKey: apiKey) }
+        }
+        XCTAssertEqual(try config(apiKey: "key with spaces").apiKey, "key with spaces")
+    }
+
     func test_rejectsWhitespaceOnlyApiKeyAndUserId() {
         assertThrows(.emptyAPIKey) { try config(apiKey: "  ") }
         assertThrows(.emptyUserId) { try config(userId: "\n") }
@@ -120,5 +134,8 @@ final class ConfigTests: XCTestCase {
             MobyBeaconSetupError.invalidEndpoint("x").errorDescription,
             "endpoint must be an absolute http(s) URL: x")
         XCTAssertEqual(MobyBeaconSetupError.emptyAPIKey.errorDescription, "apiKey must not be empty")
+        XCTAssertEqual(
+            MobyBeaconSetupError.apiKeyContainsControlCharacters.errorDescription,
+            "apiKey must not contain control characters")
     }
 }
