@@ -22,7 +22,31 @@ import MobyBeacon
 
 To upgrade, replace the folder with the new release's folder. Xcode picks up the new binary on the next build.
 
-A Swift package that depends on the SDK references the same folder with `.package(path: "Vendor/MobyBeacon-0.1.0")` and the product with `.product(name: "MobyBeacon", package: "MobyBeacon-0.1.0")` (a local package's identity is its folder name), or downloads the zip at build time with a `binaryTarget(name:url:checksum:)` pointing at the release asset's URL and the checksum from the release notes.
+A Swift package that depends on the SDK references the same folder with `.package(path: "Vendor/MobyBeacon-0.1.0")` and the product with `.product(name: "MobyBeacon", package: "MobyBeacon-0.1.0")` (a local package's identity is its folder name).
+
+### Fetching from GitHub instead of vendoring
+
+SwiftPM can download the release zip itself through a binary target that names the release asset's URL and the checksum from the release notes. SwiftPM finds the XCFramework inside the wrapper folder in the zip. An app target cannot declare a binary target directly, so the declaration goes in a Swift package the app depends on, for example a small local package inside the app's repository:
+
+```swift
+// Packages/MobyBeaconBinary/Package.swift
+// swift-tools-version: 5.9
+import PackageDescription
+
+let package = Package(
+    name: "MobyBeaconBinary",
+    platforms: [.iOS(.v15)],
+    products: [.library(name: "MobyBeacon", targets: ["MobyBeacon"])],
+    targets: [
+        .binaryTarget(
+            name: "MobyBeacon",
+            url: "https://github.com/mobyinc/Moby-Beacon-SDKs/releases/download/ios-v0.1.0/MobyBeacon-0.1.0.zip",
+            checksum: "<SwiftPM checksum from the release notes>"),
+    ]
+)
+```
+
+Add that package with Add Local… and link its `MobyBeacon` product. To upgrade, change the URL and checksum. Builds need network access to GitHub until the zip is in SwiftPM's cache; the vendored folder above is the offline alternative.
 
 ## Platform Setup
 
