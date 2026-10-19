@@ -4,9 +4,9 @@
 
 ## Install
 
-Each release ships the SDK as a prebuilt AAR inside a small Maven repository folder, attached as `moby-beacon-<version>.zip` to the `android-v<version>` release on this repo's Releases page. The folder also holds a POM that lists the SDK's dependencies and a sources jar, so Gradle resolves it like any other library and the app never compiles the SDK's sources. The same binary works from Kotlin and Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21.
+Each release ships the SDK as a prebuilt AAR inside a small Maven repository folder, attached as `moby-beacon-<version>.zip` to the `android-v<version>` release on this repo's Releases page. The folder also holds a POM that lists the SDK's dependencies and a sources jar, so Gradle resolves it like any other library and the app never compiles the SDK's sources. The same binary works from Kotlin and Java. Requires Android Gradle Plugin 8.x, `compileSdk` 36 and `minSdk` 21. Kotlin client apps require Kotlin 2.1+ to read the SDK's Kotlin 2.2 metadata; Java-only apps do not need the Kotlin Gradle plugin.
 
-1. Download `moby-beacon-<version>.zip` from the release and unzip it into your project's repository, for example `vendor/moby-beacon-0.1.0/`. The folder contains `repo/`, this README and the changelog.
+1. Download `moby-beacon-<version>.zip` from the release and unzip it into your project's repository, for example `vendor/moby-beacon-0.1.0/`. The folder contains `repo/`, this README, the changelog and the license.
 2. Add the `repo` folder as a Maven repository and depend on the artifact:
 
 ```groovy
@@ -244,6 +244,7 @@ Run the JVM unit tests and build the AAR:
 
 ```bash
 cd android
+python3 scripts/test_package_release.py
 ./gradlew :moby-beacon:testReleaseUnitTest :moby-beacon:assembleRelease
 ```
 
@@ -253,7 +254,7 @@ Publish a release:
 
 1. Set the new version in `moby-beacon/build.gradle` (`version = '...'`), in the `MobyBeacon.VERSION` constant, and in `CHANGELOG.md`, and commit.
 2. Run `./gradlew :moby-beacon:publish`. It writes the AAR, POM, Gradle module metadata and sources jar to `moby-beacon/build/repo/com/mobyinc/moby-beacon/<version>/` (ignored).
-3. Run `scripts/package-release.sh <version>`. It copies that version's folder, this README and the changelog into `build/release/moby-beacon-<version>/`, zips it to `moby-beacon-<version>.zip` and prints the zip's SHA-256.
+3. Run `scripts/package-release.sh <version>`. It checks that `build.gradle`, `MobyBeacon.VERSION` and `CHANGELOG.md` declare that version (so an older, still-published build cannot be shipped by mistake) and that the AAR, POM, Gradle module metadata and sources jar are present and nonempty, then copies that version's folder, this README, the changelog and the license into `build/release/moby-beacon-<version>/`, zips it to `moby-beacon-<version>.zip` and prints the zip's SHA-256.
 4. Tag the commit `android-v<version>`, create a GitHub release on that tag, attach the zip and put the SHA-256 in the release notes.
 
 `MobyBeacon.VERSION` reports the version at runtime.

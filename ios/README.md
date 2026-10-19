@@ -4,9 +4,9 @@
 
 ## Install
 
-Each release ships the SDK as a prebuilt `MobyBeacon.xcframework` wrapped in a small Swift package, attached to the `ios-v<version>` release on this repo's Releases page. An app adds it like any other package and never compiles the SDK's sources. The same binary works from Swift and Objective-C. Requires iOS 15+ and Xcode 15+.
+Each release ships the SDK as a prebuilt `MobyBeacon.xcframework` wrapped in a small Swift package, attached to the `ios-v<version>` release on this repo's Releases page. An app adds it like any other package and never compiles the SDK's sources. The same binary works from Swift and Objective-C. Requires iOS 15+. For a prebuilt release, use the Xcode version recorded in `BUILD-INFO.txt` or a newer compatible toolchain; a binary built with a newer Swift compiler is not guaranteed to import into an older Xcode. Building the SDK from source requires Xcode 15+.
 
-1. Download `MobyBeacon-<version>.zip` from the release and unzip it. The folder contains `Package.swift`, `MobyBeacon.xcframework`, this README and the changelog.
+1. Download `MobyBeacon-<version>.zip` from the release and unzip it. The folder contains `Package.swift`, `MobyBeacon.xcframework`, `BUILD-INFO.txt`, this README, the changelog and the license.
 2. Put the folder in your project's repository, for example `Vendor/MobyBeacon-0.1.0/`.
 3. In Xcode choose File ▸ Add Package Dependencies… ▸ Add Local…, pick that folder, and add the `MobyBeacon` product to the app target. Xcode links the right slice for devices and the simulator and embeds the framework automatically.
 
@@ -22,7 +22,7 @@ import MobyBeacon
 
 To upgrade, replace the folder with the new release's folder. Xcode picks up the new binary on the next build.
 
-A Swift package that depends on the SDK references the same folder with `.package(path: "Vendor/MobyBeacon-0.1.0")`, or downloads the zip at build time with a `binaryTarget(name:url:checksum:)` pointing at the release asset's URL and the checksum from the release notes.
+A Swift package that depends on the SDK references the same folder with `.package(path: "Vendor/MobyBeacon-0.1.0")` and the product with `.product(name: "MobyBeacon", package: "MobyBeacon-0.1.0")` (a local package's identity is its folder name), or downloads the zip at build time with a `binaryTarget(name:url:checksum:)` pointing at the release asset's URL and the checksum from the release notes.
 
 ## Platform Setup
 
@@ -296,6 +296,6 @@ Build the distributable XCFramework for a release:
 ios/scripts/build-xcframework.sh 0.1.0
 ```
 
-This archives the package for iOS devices and the simulator with library evolution enabled (`BUILD_LIBRARY_FOR_DISTRIBUTION`), so the binary can be imported by other Xcode versions, and writes `ios/build/xcframework/MobyBeacon-0.1.0/` (the wrapper package), `MobyBeacon-0.1.0.zip` and the zip's SwiftPM checksum. Tag the commit `ios-v0.1.0`, create a GitHub release on that tag, attach the zip and put the checksum in the release notes. The version is stamped into each framework's `Info.plist` as `CFBundleShortVersionString`. The build takes under a minute and needs Xcode; `swift test` must pass first.
+This archives the package for iOS devices and the simulator with library evolution enabled (`BUILD_LIBRARY_FOR_DISTRIBUTION`), and writes `ios/build/xcframework/MobyBeacon-0.1.0/` (the wrapper package), `MobyBeacon-0.1.0.zip` and the zip's SwiftPM checksum. Build release binaries with the oldest Xcode version your client apps support, and verify importing the generated package in that version; library evolution supports compatible newer toolchains, not arbitrary older compilers. `BUILD-INFO.txt` records the Xcode and Swift versions used. Tag the commit `ios-v0.1.0`, create a GitHub release on that tag, attach the zip and put the checksum in the release notes. The version is stamped into each framework's `Info.plist` as `CFBundleShortVersionString`, with `com.mobyinc.MobyBeacon` as the bundle identifier. The build needs Xcode; `swift test` must pass first.
 
 The Objective-C selectors the app calls (`startWithConfig:error:`, `track:action:details:`, `track:action:details:userId:timestamp:`, `flushWithCompletion:`, `disposeWithCompletion:`, and `initWithEndpoint:apiKey:userId:error:`) are pinned by `Tests/MobyBeaconTests/ObjectiveCSurfaceTests.swift`. After building an XCFramework, the same selectors can be checked in its `Headers/MobyBeacon-Swift.h`. The `async` variants of `flush` and `dispose` are Swift only.

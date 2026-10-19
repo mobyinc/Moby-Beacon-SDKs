@@ -1,6 +1,7 @@
 #!/bin/bash
 # Builds a distributable MobyBeacon.xcframework (iOS device + simulator) from the
-# package in ios/, with library evolution enabled so any Xcode can import it.
+# package in ios/, with library evolution enabled for compatible newer Swift
+# toolchains. Build with the oldest Xcode version your client apps support.
 #
 #   ios/scripts/build-xcframework.sh 0.1.0
 #
@@ -22,16 +23,23 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 # 1. Temporary copy of the package with a dynamic product and no test target.
-cp -R "$IOS_DIR/Sources" "$WORK/"
+#    The copy lives in a folder named MobyBeacon: xcodebuild takes the package
+#    identity from the folder name and writes it into the framework's bundle
+#    identifier and the -package-name flag of every .swiftinterface, so a
+#    random mktemp name would leak into the shipped binary.
+PKG_SRC="$WORK/MobyBeacon"
+mkdir -p "$PKG_SRC"
+cp -R "$IOS_DIR/Sources" "$PKG_SRC/"
 sed -e 's/.library(name: "MobyBeacon", targets: \["MobyBeacon"\])/.library(name: "MobyBeacon", type: .dynamic, targets: ["MobyBeacon"])/' \
-    -e '/testTarget/d' "$IOS_DIR/Package.swift" > "$WORK/Package.swift"
-grep -q "type: .dynamic" "$WORK/Package.swift" || { echo "could not make the product dynamic" >&2; exit 1; }
+    -e '/testTarget/d' "$IOS_DIR/Package.swift" > "$PKG_SRC/Package.swift"
+grep -q "type: .dynamic" "$PKG_SRC/Package.swift" || { echo "could not make the product dynamic" >&2; exit 1; }
 
 # 2. One archive per platform, each with its own derived data.
 archive() { # $1 = destination, $2 = name
   xcodebuild archive -quiet -scheme MobyBeacon -destination "$1" \
     -archivePath "$WORK/$2" -derivedDataPath "$WORK/dd-$2" \
     SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES CODE_SIGNING_ALLOWED=NO \
+    PRODUCT_BUNDLE_IDENTIFIER=com.mobyinc.MobyBeacon \
     MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION=1 \
     DYLIB_CURRENT_VERSION="$VERSION" DYLIB_COMPATIBILITY_VERSION="$VERSION"
 }
@@ -57,7 +65,7 @@ MM
   echo "$fw"
 }
 
-cd "$WORK"
+cd "$PKG_SRC"
 archive 'generic/platform=iOS' ios
 archive 'generic/platform=iOS Simulator' sim
 DEVICE_FW="$(assemble ios iphoneos)"
@@ -79,7 +87,11 @@ let package = Package(
     targets: [.binaryTarget(name: "MobyBeacon", path: "MobyBeacon.xcframework")]
 )
 PS
-cp "$IOS_DIR/README.md" "$IOS_DIR/CHANGELOG.md" "$PKG/"
+cp "$IOS_DIR/README.md" "$IOS_DIR/CHANGELOG.md" "$IOS_DIR/../LICENSE" "$PKG/"
+{
+  xcodebuild -version
+  xcrun swift --version
+} > "$PKG/BUILD-INFO.txt"
 
 # 5. Zip for a GitHub Release and print the checksum for a url-based binaryTarget.
 (cd "$OUT" && ditto -c -k --keepParent --norsrc --noextattr "MobyBeacon-$VERSION" "MobyBeacon-$VERSION.zip")

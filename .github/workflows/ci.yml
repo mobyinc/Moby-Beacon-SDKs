@@ -52,6 +52,7 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - run: python3 scripts/test_package_release.py
       - run: ./gradlew :moby-beacon:assembleRelease :moby-beacon:testReleaseUnitTest
       - run: ./gradlew :moby-beacon:publish
 
