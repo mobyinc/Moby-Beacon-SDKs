@@ -29,4 +29,20 @@ All SDK state lives on one serial scheduler. Tests drive it with `TestScheduler.
 
 ## Releases
 
-Tag `ios-vX.Y.Z`, run `scripts/build-xcframework.sh X.Y.Z`, attach the zip to a GitHub release on the tag with its checksum in the notes. Apps add the unzipped wrapper package as a local package; the source package in `ios/` is for development.
+Releases are cut from `main` with a clean tree. There is no version constant in the sources; the version lives in the tag, the changelog and the build argument.
+
+1. Add a `## X.Y.Z` section to `CHANGELOG.md` (the zip ships it; the build script refuses a version without one) and commit.
+2. `swift test` must pass.
+3. Tag and build:
+   ```bash
+   git tag ios-vX.Y.Z && git push origin main ios-vX.Y.Z
+   scripts/build-xcframework.sh X.Y.Z
+   ```
+   Build with the oldest Xcode version client apps support; the swiftinterfaces are readable by that compiler and newer ones, not older ones. The script writes `build/xcframework/MobyBeacon-X.Y.Z.zip` and `MobyBeacon-X.Y.Z.zip.checksum`, and `BUILD-INFO.txt` inside the package records the Xcode used.
+4. Publish, with the checksum in the notes so `binaryTarget(url:checksum:)` users can pin it:
+   ```bash
+   gh release create ios-vX.Y.Z build/xcframework/MobyBeacon-X.Y.Z.zip \
+     --title "iOS SDK X.Y.Z" --notes "SwiftPM checksum: $(cat build/xcframework/MobyBeacon-X.Y.Z.zip.checksum)"
+   ```
+
+Apps add the unzipped wrapper package as a local package; the source package in `ios/` is for development.

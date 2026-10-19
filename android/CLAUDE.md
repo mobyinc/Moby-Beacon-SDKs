@@ -32,4 +32,21 @@ All SDK state lives on the worker thread. Tests drive it with `TestScheduler.run
 
 ## Releases
 
-Bump `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` and `CHANGELOG.md`; run `./gradlew :moby-beacon:publish` then `scripts/package-release.sh X.Y.Z`; tag `android-vX.Y.Z`; attach the zip to a GitHub release on the tag with its SHA-256 in the notes. Apps unzip the release folder into their project and point Gradle at `repo/` inside it; the source module in `android/moby-beacon/` is for development.
+Releases are cut from `main` with a clean tree.
+
+1. Set the same version in three places and commit: `version` in `moby-beacon/build.gradle`, `MobyBeacon.VERSION` in `MobyBeacon.kt`, and a `## X.Y.Z` section in `CHANGELOG.md`. The packaging script refuses a version any of them does not declare.
+2. `./gradlew :moby-beacon:testReleaseUnitTest` and `python3 scripts/test_package_release.py` must pass.
+3. Tag, publish and package:
+   ```bash
+   git tag android-vX.Y.Z && git push origin main android-vX.Y.Z
+   ./gradlew :moby-beacon:publish
+   scripts/package-release.sh X.Y.Z
+   ```
+   `publish` writes the AAR, POM, Gradle module metadata and sources jar to `moby-beacon/build/repo/`; the script zips that version's folder with the README, changelog and license to `build/release/moby-beacon-X.Y.Z.zip` and writes `moby-beacon-X.Y.Z.zip.sha256`.
+4. Publish, with the SHA-256 in the notes:
+   ```bash
+   gh release create android-vX.Y.Z build/release/moby-beacon-X.Y.Z.zip \
+     --title "Android SDK X.Y.Z" --notes "SHA-256: $(cut -d' ' -f1 build/release/moby-beacon-X.Y.Z.zip.sha256)"
+   ```
+
+Apps unzip the release folder into their project and point Gradle at `repo/` inside it; the source module in `android/moby-beacon/` is for development.
