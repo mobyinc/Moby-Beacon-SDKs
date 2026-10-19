@@ -29,6 +29,33 @@ Projects that declare repositories in the root `build.gradle` (`allprojects { re
 
 To upgrade, replace the folder with the new release's folder and bump the version in both lines.
 
+### Fetching from GitHub instead of vendoring
+
+Each release also attaches the bare `moby-beacon-<version>.aar`, its Gradle module metadata (`.module`) and POM. Gradle can fetch those straight from the Releases page through an Ivy repository whose path pattern matches the release download URL, so nothing is copied into the app's repository:
+
+```groovy
+// settings.gradle
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        ivy {
+            url "https://github.com/mobyinc/Moby-Beacon-SDKs/releases/download"
+            patternLayout { artifact "android-v[revision]/[artifact]-[revision].[ext]" }
+            metadataSources { gradleMetadata() }
+            content { includeGroup "com.mobyinc" }
+        }
+    }
+}
+
+// app/build.gradle
+dependencies {
+    implementation 'com.mobyinc:moby-beacon:0.1.0'
+}
+```
+
+The module metadata carries the SDK's dependencies, so they resolve as with the vendored folder. To upgrade, bump the version in the dependency line. Builds need network access to GitHub until the artifact is in Gradle's cache; the vendored folder above is the offline alternative.
+
 The app needs the INTERNET permission in `AndroidManifest.xml` (inside `<manifest>`):
 
 ```xml
@@ -255,7 +282,7 @@ Publish a release:
 1. Set the new version in `moby-beacon/build.gradle` (`version = '...'`), in the `MobyBeacon.VERSION` constant, and in `CHANGELOG.md`, and commit.
 2. Run `./gradlew :moby-beacon:publish`. It writes the AAR, POM, Gradle module metadata and sources jar to `moby-beacon/build/repo/com/mobyinc/moby-beacon/<version>/` (ignored).
 3. Run `scripts/package-release.sh <version>`. It checks that `build.gradle`, `MobyBeacon.VERSION` and `CHANGELOG.md` declare that version (so an older, still-published build cannot be shipped by mistake) and that the AAR, POM, Gradle module metadata and sources jar are present and nonempty, then copies that version's folder, this README, the changelog and the license into `build/release/moby-beacon-<version>/`, zips it to `moby-beacon-<version>.zip` and prints the zip's SHA-256.
-4. Tag the commit `android-v<version>`, create a GitHub release on that tag, attach the zip and put the SHA-256 in the release notes.
+4. Tag the commit `android-v<version>`, create a GitHub release on that tag, attach the zip together with the bare AAR, `.module` and POM from `repo/com/mobyinc/moby-beacon/<version>/` (the Ivy install path fetches those three by name), and put the SHA-256 in the release notes.
 
 `MobyBeacon.VERSION` reports the version at runtime.
 

@@ -43,9 +43,11 @@ Releases are cut from `main` with a clean tree.
    scripts/package-release.sh X.Y.Z
    ```
    `publish` writes the AAR, POM, Gradle module metadata and sources jar to `moby-beacon/build/repo/`; the script zips that version's folder with the README, changelog and license to `build/release/moby-beacon-X.Y.Z.zip` and writes `moby-beacon-X.Y.Z.zip.sha256`.
-4. Publish, with the SHA-256 in the notes:
+4. Publish, with the SHA-256 in the notes. Attach the zip (vendored install) and the bare AAR, `.module` and POM (apps using the Ivy repository in the README fetch these three by name from the release URL):
    ```bash
+   A=build/release/moby-beacon-X.Y.Z/repo/com/mobyinc/moby-beacon/X.Y.Z
    gh release create android-vX.Y.Z build/release/moby-beacon-X.Y.Z.zip \
+     $A/moby-beacon-X.Y.Z.aar $A/moby-beacon-X.Y.Z.module $A/moby-beacon-X.Y.Z.pom \
      --title "Android SDK X.Y.Z" --notes "SHA-256: $(cut -d' ' -f1 build/release/moby-beacon-X.Y.Z.zip.sha256)"
    ```
 
